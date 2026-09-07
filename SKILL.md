@@ -5,11 +5,14 @@ description: Design backend systems or review existing services with HLDs, STRID
 
 # Secure System Design
 
-Produce three linked artifacts for a backend feature:
+Produce a linked set of artifacts for a backend feature:
 
 1. **HLD** — what we are building and why
 2. **Threat model** — what can go wrong, what we will do about it
 3. **Deep Dive** — function-level specs an engineer can implement from
+4. **Test plan** — how each mitigation gets verified, and by whom
+
+Reviewing something that already runs swaps the Deep Dive for a prioritized remediation backlog. The rest are the same.
 
 The value is in the links between them. Threat modeling finds design flaws that get folded back into the HLD, and each Deep Dive line traces to a threat it mitigates. Judge the review by coverage, evidence, and justified decisions. A review may confirm that existing controls are sufficient without requiring design changes.
 
@@ -146,7 +149,25 @@ The highest-value tests are the ones that span multiple functions. Anyone testin
 
 For a bounded review, default to a single markdown file with all stages. For all-services reviews or an explicit HTML request, follow `references/service-review.md` for the linked Markdown and offline HTML deliverables. Otherwise, adapt the output when the user has a tool they are already working in (Threat Dragon, Excalidraw, a wiki). Match their tool if they have one.
 
+Unless the user names a location, write deliverables into `security-review/`:
+
+```
+security-review/
+├── report.md      engineering detail, all stages
+├── report.html    all-services reviews and explicit HTML requests only
+├── threats.yaml   the threat records both views are generated from
+└── diagrams/      rendered SVG, when diagrams are not inlined
+```
+
+`threats.yaml` holds one entry per threat in the record format from `references/threat-modeling.md`, and is the only place a threat is authored. Markdown and HTML are views of it — that is what keeps their IDs, counts, severities, and statuses in agreement by construction instead of by proofreading, and it makes a Threat Dragon export a transformation rather than a re-authoring. A bounded review with a handful of threats can keep the records inline in `report.md` instead; keep them in one section rather than scattered through the prose.
+
 For Excalidraw, emit clipboard JSON they can paste — one text element per function spec, laid out in columns. Never silently drop elements they already had; ask for the current contents or add only new elements.
+
+## What not to put in a deliverable
+
+**Never copy a credential value** into a report, a diagram, a filename, or a commit. The finding is that the credential is reachable and needs rotating; the value adds nothing to it and turns the report into a second copy of the problem. The same restraint applies to personal data — name the field, do not quote the row.
+
+**Keep deliverables local.** A completed review is a map of where a system is weakest. Do not publish it to a hosted page, paste it into an external service, or send architecture detail to a remote diagram renderer unless the user asks for exactly that.
 
 ## Keeping it honest
 

@@ -6,7 +6,7 @@ Use this workflow for an explicit all-services review. Use the reporting section
 
 Discover deployable services from manifests, routing, code, workers, scheduled jobs, and infrastructure configuration. Record shared identity providers, stores, queues, gateways, observability, and external dependencies. A monolith can have logical service areas; explain the decomposition instead of inventing deployments.
 
-Create stable service IDs and a coverage ledger before deep analysis:
+Create stable service IDs and a coverage ledger before deep analysis. Service IDs prefix the element and threat IDs defined in `threat-modeling.md`, so fix them here and do not renumber them later:
 
 | Service ID | Paths / revision | Entry points and flows | Dependencies | Review state | Evidence gaps / next step |
 | --- | --- | --- | --- | --- | --- |
@@ -26,7 +26,7 @@ Complete the following for one service before moving to the next, except where m
 3. Trace flows from input through authentication, authorization, parsing, business decisions, storage, downstream calls, and responses or side effects. Include failure paths, retries, idempotency, races, resource limits, secret handling, and log/error copies where relevant. Inspect the shared helpers and other callers that determine whether a control can be bypassed.
 4. Build detailed DFDs for distinct flows. Show external entities, security-relevant processes, stores, labeled directional flows, and trust boundaries. Include protocol, identity, and data carried across boundaries. Decompose a service's security decisions rather than drawing only one opaque box.
 5. Apply relevant STRIDE categories per element and optional privacy analysis. Record considered categories with no supported threat as reviewed, not as invented findings. Trace concrete attack paths and existing controls with source/configuration references or observed evidence.
-6. For each supported threat, record stable ID, service/element/flow IDs, category, attacker prerequisites, attack steps, affected asset, impact, severity rationale, evidence and confidence, current controls, proposed mitigation, owner (or unknown), and a verification test. Keep evidence state separate from remediation status.
+6. For each supported threat, write the full record from `threat-modeling.md` — ID, element and flow IDs, category, prerequisites, attack steps, asset, impact, severity rationale, evidence and confidence, current controls, proposed mitigation, owner (or unknown), and a verification test. Qualify the element IDs with the service ID so they stay unique across the review. Keep evidence state separate from remediation status.
 7. Produce the service's prioritized remediation work, compatibility risks, residual risk, and unanswered questions. A recommendation alone does not close a finding. Acceptance requires an actual recorded owner decision; otherwise mark acceptance as proposed.
 
 `reviewed` means enumerated flows were traced to their consequential operations, relevant threats assessed, and evidence gaps documented. Any missing material that prevents that trace leaves the service `blocked` or `in progress`. It does not mean vulnerability-free.
@@ -49,7 +49,7 @@ Deduplicate shared root causes into one remediation item while preserving every 
 
 ## 4. Human-readable deliverables
 
-For an all-services review, generate engineering Markdown and a self-contained `report.html`. For a bounded HTML request, include only the requested scope. Derive both views from the same review records so IDs, counts, severity, and status agree. Keep detailed evidence in Markdown or linked report sections; avoid writing two conflicting findings lists.
+For an all-services review, generate engineering Markdown and a self-contained `report.html`. For a bounded HTML request, include only the requested scope. Generate both views from the threat records described in `SKILL.md` — `security-review/threats.yaml` — so IDs, counts, severity, and status agree by construction rather than by proofreading. Keep detailed evidence in Markdown or linked report sections; never maintain two findings lists.
 
 The HTML must open directly from disk without a server or internet connection. Use embedded CSS, native anchors, tables, and `<details>` disclosures. Render diagrams as inline SVG, or embed locally rendered images; raw Mermaid text without a renderer does not satisfy the visual requirement. Add only small inline JavaScript when search or filtering materially helps a large report. Keep full content readable with JavaScript disabled.
 
@@ -64,7 +64,7 @@ Include:
 
 Use semantic headings, keyboard-accessible links/disclosures, visible focus, sufficient contrast, and print styles. Never rely only on color to convey severity. Escape source snippets, labels, and findings as text; never insert untrusted content as raw HTML or executable script. Exclude credential values and unnecessary personal data. Do not fetch remote fonts, scripts, or diagram services with confidential architecture data.
 
-Before delivery, verify unique IDs, valid diagram/threat links, coverage totals, and matching threat counts across views. Open the HTML in an available browser and check diagrams, navigation, narrow-screen readability, and printing. If a browser is unavailable, run structural checks and explicitly report visual verification as pending. Do not claim an HTML report exists until its file has been generated.
+Before delivery, verify unique IDs, valid diagram/threat links, coverage totals, and matching threat counts across views — against the records, not by eye. Include the coverage matrix from `threat-modeling.md` per service, so a reader can tell an element that was cleared from one that was skipped. Open the HTML in an available browser and check diagrams, navigation, narrow-screen readability, and printing. If a browser is unavailable, run structural checks and explicitly report visual verification as pending. Do not claim an HTML report exists until its file has been generated.
 
 ## 5. Threat Dragon interoperability
 

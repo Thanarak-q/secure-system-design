@@ -20,6 +20,48 @@ Turn the HLD into a Data Flow Diagram. The HLD says what the system does; the DF
 
 A process **does something**. A flow **carries something**. Getting this wrong is the most common early mistake: putting "Authenticate session" on an arrow rather than in a circle means there is nowhere to ask "can this check be bypassed?", and that question is where the real threat lives.
 
+### Give every element a stable ID
+
+Threats, diagram links, remediation items, and test cases all reference elements.
+Assign IDs once, when the diagram is drawn, and do not renumber them afterwards:
+
+| Prefix | Element |
+|---|---|
+| `EE1` | External entity |
+| `P1` | Process |
+| `DS1` | Data store |
+| `F1` | Data flow |
+| `TB1` | Trust boundary |
+
+Threats are `T-<scope>-<n>`, where scope is the service ID in an all-services
+review and the feature name otherwise — `T-upload-004`. Retire the ID of a removed
+element rather than reusing it, so an older report still resolves to the right
+thing.
+
+### Record the attributes that drive threats
+
+Shape alone does not generate threats. These attributes do, and each one replaces
+a question that would otherwise be answered by guessing:
+
+| Element | Attribute | What it decides |
+|---|---|---|
+| Any | out of scope, and why | Whether an element with no threats was cleared or forgotten |
+| Process | privilege level it runs at | Whether E is worth asking, and what escalation reaches |
+| Process | makes an authn/authz decision | Whether bypass and ordering questions apply |
+| Data store | holds credentials or personal data | Blast radius of I, and whether LINDDUN applies |
+| Data store | is a log or audit record | Whether R applies, and what retention is owed |
+| Data store | encrypted at rest, who holds the key | Whether an infrastructure compromise is also a data compromise |
+| Data flow | crosses a public network | Whether T and I are live rather than theoretical |
+| Data flow | encrypted and authenticated in transit | Same, and whether a forged upstream header is possible |
+| Data flow | carries credentials or personal data | Where copies have to be traced to |
+| External entity | authenticates itself, and how | Whether S is a real threat or an accepted condition |
+
+Fill these in before generating threats. Several combinations produce a threat
+mechanically: an unencrypted flow on a public network owes you Tampering and
+Information disclosure whether or not anyone imagined a scenario, and a store
+marked both "is a log" and "holds personal data" owes you a retention decision and
+a LINDDUN pass.
+
 ### Decompose the processes
 
 An HLD legitimately shows one backend box. A DFD must not — one box produces threats like "the backend could be bypassed", which nobody can act on.
@@ -77,7 +119,7 @@ Flows and stores have no identity to impersonate and no privilege to escalate, w
 
 ### Scope the work
 
-Full coverage produces roughly `processes × 6 + flows × 3 + stores × 4` threats, which is more than most projects can act on. Prioritise:
+Full coverage produces roughly `processes × 6 + flows × 3 + stores × 4 + external entities × 2` threats, which is more than most projects can act on. Prioritise:
 
 1. Flows crossing trust boundaries
 2. Processes making security decisions
@@ -129,6 +171,65 @@ Failure mode undefined   → 6 threats, one decision
 Six threats behind one decision is one piece of work, not six. Grouping shows the real size of the remaining effort, which matters when someone is deciding whether the work is feasible.
 
 ---
+
+## The threat record
+
+One record per threat, in every mode. A threat missing prerequisites, evidence, or
+a verification test cannot be prioritised by anyone who was not in the room.
+
+| Field | Holds |
+|---|---|
+| ID | `T-<scope>-<n>`, stable across revisions |
+| Title | The failure, in one line, specific to this system |
+| Elements | The element and flow IDs it applies to |
+| Category | STRIDE letter, or LINDDUN category |
+| Prerequisites | What the attacker needs before starting — position, credentials, privilege |
+| Attack steps | The ordered path from prerequisites to impact |
+| Asset | What is actually harmed |
+| Impact | Consequence in terms someone outside the team can weigh |
+| Severity | Critical / High / Medium / Low, with the rationale |
+| Evidence | The source, plus confidence: Confirmed, Likely, or Theoretical |
+| Controls | What exists today, with a source or config reference |
+| Mitigation | The specific change, and the reason where it is not obvious |
+| Status | Mitigated / Accepted / Transferred / Out of scope / Open |
+| Owner | Who acts, or `unknown` |
+| Verify | The test that proves it closed |
+
+Worked example:
+
+```
+T-upload-004  Per-credential rate limit multiplies with credential count
+
+Elements:      P2 rate limiter, DS1 limit counters, F3 client -> API
+Category:      D (denial of service)
+Prerequisites: One ordinary account able to create API credentials.
+               No special privilege, no network position.
+Attack steps:  1. Create five credentials on one account (MAX_ITEMS = 5).
+               2. Issue requests round-robin across all five.
+               3. Each credential carries its own bucket, so sustained
+                  throughput is five times the intended per-account limit.
+Asset:         Shared worker pool, third-party spend
+Impact:        One account consumes five accounts' worth of capacity and
+               budget, degrading every other tenant on the shared pool.
+Severity:      High — real money and system-wide availability, reachable by
+               any ordinary account.
+Evidence:      Likely. Limiter keys on credential ID
+               (limiter.py:41, key = f"rl:{cred.id}"). Not reproduced.
+Controls:      Per-credential token bucket. No account-level ceiling.
+Mitigation:    Key the bucket by account ID. Keep the per-credential bucket
+               underneath, so a leaked credential is still isolated, and
+               check both in one atomic script — a rejection by either must
+               consume neither, or repeated rejections drain the account.
+Status:        Open — mitigation agreed, implementation pending.
+Owner:         API team
+Verify:        test_limit_shared_across_credentials() — five credentials on
+               one account, aggregate throughput equals the single-credential
+               limit.
+```
+
+Keep evidence state separate from status. `Likely / Open` and `Confirmed / Open`
+are the same row shape and completely different work, and collapsing them is what
+makes a report unactionable.
 
 ## LINDDUN (privacy)
 
@@ -228,6 +329,35 @@ Check for:
 - Mitigations contradicting the current design (common after the design evolved)
 - Placeholder text left in
 - Flows in the diagram with no threats at all
+
+### Coverage matrix
+
+The checklist asks whether an element with no threats was cleared or skipped. The
+matrix is what lets you answer it. One row per element, one column per category
+that applies to its type, no empty cells:
+
+| Element | S | T | R | I | D | E |
+|---|---|---|---|---|---|---|
+| EE1 user | T-upload-001 | n/a | — | n/a | n/a | n/a |
+| P2 rate limiter | — | T-upload-007 | — | — | T-upload-004 | — |
+| F3 client → API | n/a | T-upload-002 | n/a | T-upload-002 | skipped | n/a |
+| DS1 counters | n/a | T-upload-009 | n/a | — | — | n/a |
+
+| Cell | Means |
+|---|---|
+| A threat ID | Analysed, threat found |
+| `n/a` | Category does not apply to this element type — blank in the STRIDE-per-element table |
+| `—` | Considered, no supported threat. A result, not a gap |
+| `skipped` | Not analysed. Record the reason under the matrix |
+
+`—` and `skipped` are one character apart and mean opposite things, so never use
+`—` for "probably fine". Every `skipped` cell needs its reason and the condition
+that would make it worth revisiting; that is the difference between coverage that
+was decided and coverage that drifted.
+
+The matrix is also the fastest review of the analysis itself. A row of `—` across
+a process that makes a security decision means the decomposition was too coarse to
+ask anything about, not that the process is safe.
 
 ### Contradictions after the design evolves
 

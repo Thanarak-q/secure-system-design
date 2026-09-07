@@ -142,7 +142,7 @@ Prioritize verification of Critical and High candidates using available code, co
 
 ### Checks that pay off quickly
 
-These are fast and frequently productive on systems that have been running a while:
+These are fast and frequently productive on systems that have been running a while. Run them against a non-production environment, with test accounts you own, under permission that names the environment you are pointing at. The ones that write state or generate load — acting on another account's resource, firing concurrent requests — need that permission explicitly; the last two read artifacts and send no traffic at all.
 
 ```
 □ Send an unauthenticated request to every route

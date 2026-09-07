@@ -8,7 +8,7 @@ The skill's invocation name is **`secure-system-design`**, as defined in [SKILL.
 
 - Designs new backend features, services, and APIs.
 - Builds data flow diagrams and identifies trust boundaries.
-- Applies STRIDE threat analysis and optional LINDDUN privacy analysis.
+- Applies STRIDE threat analysis and optional LINDDUN privacy analysis, with per-element attributes, stable element IDs, and a coverage matrix that separates cleared elements from skipped ones.
 - Feeds architectural mitigations back into the design.
 - Produces function-level specifications and tests linked to threats.
 - Reviews existing systems and produces prioritized remediation plans.
@@ -31,7 +31,7 @@ Start with what you already have: an idea, requirements, an HLD, a diagram, code
 
 For an existing system, reconstruct the architecture from available evidence, assess actual behavior, and produce a remediation backlog. Distinguish predicted threats from confirmed findings and record unknowns explicitly.
 
-A bounded review defaults to one Markdown document. An all-services review produces engineering Markdown plus an offline `report.html` for human review, with service coverage, DFDs, threat details, and a consolidated remediation backlog. Threat Dragon JSON is an optional export that must be checked against the target version; HTML alone is not a Threat Dragon model. The workflow can also work with material from Threat Dragon, Excalidraw, or a wiki.
+A bounded review defaults to one Markdown document. An all-services review produces engineering Markdown plus an offline `report.html` for human review, with service coverage, DFDs, threat details, and a consolidated remediation backlog. Deliverables land in `security-review/`, and both views are generated from a single set of threat records so their IDs, counts, and statuses cannot drift apart. Threat Dragon JSON is an optional export that must be checked against the target version; HTML alone is not a Threat Dragon model. The workflow can also work with material from Threat Dragon, Excalidraw, or a wiki.
 
 ### Reviewing all services
 
