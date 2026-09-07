@@ -33,50 +33,47 @@ The default output is one Markdown document. The workflow can also work with mat
 
 ## Installation
 
-Download or clone this repository. Run the commands from its root, where `SKILL.md` and `references/` are located. The installed directory uses the skill's declared name.
-
-### Codex
+With Node.js and npm installed, run:
 
 ```sh
-mkdir -p ~/.agents/skills/system-design-threat-model
-cp -R SKILL.md references ~/.agents/skills/system-design-threat-model/
+npx --yes skills add Thanarak-q/secure-system-design --global --yes --agent codex claude-code hermes-agent gemini-cli
 ```
 
-Invoke it:
+This installs the skill for Codex, Claude Code, Hermes Agent, and Gemini CLI. Remove agent names you do not use. `--global` installs for your user across projects; the `--yes` flags skip npm and installer confirmation prompts. The syntax and agent names follow the [Skills CLI documentation](https://github.com/vercel-labs/skills).
+
+To install for just one agent, for example Codex:
+
+```sh
+npx --yes skills add Thanarak-q/secure-system-design --global --yes --agent codex
+```
+
+To inspect the repository's skills without installing:
+
+```sh
+npx --yes skills add Thanarak-q/secure-system-design --list
+```
+
+### Usage
+
+In Codex:
 
 ```text
 $system-design-threat-model review my system architecture
 ```
 
-Codex detects skill changes automatically. Restart it if the skill does not appear.
-
-### Claude Code
-
-```sh
-mkdir -p ~/.claude/skills/system-design-threat-model
-cp -R SKILL.md references ~/.claude/skills/system-design-threat-model/
-```
-
-Invoke it:
+In Claude Code:
 
 ```text
 /system-design-threat-model review my system architecture
 ```
 
-### Gemini CLI
-
-```sh
-mkdir -p ~/.gemini/skills/system-design-threat-model
-cp -R SKILL.md references ~/.gemini/skills/system-design-threat-model/
-```
-
-Run `/skills reload` in an existing session, then ask:
+In Hermes Agent or Gemini CLI:
 
 ```text
 Use system-design-threat-model to review my system architecture.
 ```
 
-The copy commands update files in an existing installation. Keep only one installed copy per tool to avoid duplicate discovery. These instructions target the coding tools, not consumer chat websites. The skill uses their supported Markdown folder format; behavior has not been tested across all three hosts.
+Restart your agent if the skill does not appear; Gemini CLI also supports `/skills reload`. These instructions target the coding tools, not consumer chat websites. Installer support does not imply that the skill's behavior has been tested in every host.
 
 ## Example prompts
 
