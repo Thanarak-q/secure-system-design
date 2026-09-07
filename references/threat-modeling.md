@@ -83,7 +83,7 @@ Full coverage produces roughly `processes × 6 + flows × 3 + stores × 4` threa
 2. Processes making security decisions
 3. Stores holding secrets or shared state
 
-Record what you deliberately skipped and why. Silence reads as oversight.
+Record what you deliberately skipped and why. Silence reads as oversight. For an all-services request, this prioritization sets the review order; track every remaining element and flow in the coverage ledger instead of dropping it.
 
 ### Questions that generate real threats
 
@@ -169,7 +169,7 @@ Every threat needs a mitigation and a status. A list of threats all marked Open 
 
 | Status | Means |
 |---|---|
-| Mitigated | Control designed and specified |
+| Mitigated | In design mode: control specified, implementation unverified. In existing-system review: implemented control verified with evidence; a proposed fix stays Open |
 | Accepted | Understood, deliberately not addressed, reason recorded |
 | Transferred | Another team owns it |
 | Out of scope | Outside this feature's boundary |

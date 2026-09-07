@@ -12,9 +12,9 @@ Threat modeling something already built differs from designing something new in 
 
 ## Stage 0 — Scope, if the system is large
 
-Anything beyond a single feature needs scoping first. A system with fifty endpoints yields thousands of threats under full per-element analysis — nobody reads that, and nothing gets fixed. Completeness is not achievable here, and chasing it produces nothing.
+For an explicit all-services review, follow `service-review.md`: inventory every service, review them in order, and finish with cross-service analysis. The bounded sampling guidance below applies only when the user asks for a focused or prioritized review. Never silently narrow an all-services request to a few flows.
 
-Two passes: broad and shallow to find where to look, then narrow and deep on what you found.
+For a bounded review, use two passes: map the system, then deeply examine selected end-to-end flows.
 
 ### Pass 1 — map, do not analyse
 
@@ -40,7 +40,7 @@ Rank by exposure and blast radius, not by how the code is organised:
 | Has a privilege escalation path | admin surface |
 | Changed recently | new code carries new defects |
 
-Pick two or three. Not more — the point of scoping is defeated by scoping widely.
+For a bounded review, choose a few flows matching the requested scope. For all-services reviews, prioritize these flows first and continue through the remaining inventory.
 
 ### A slice is a flow, not a module
 
@@ -51,11 +51,11 @@ Bad:   the storage service
 
 Threats live in how data moves, not inside boxes. Slicing by module cuts flows in half and hides exactly the boundary crossings you are looking for.
 
-A workable slice has one clear external entry point, one clear endpoint, crosses at least one trust boundary, and contains five to eight processes. More than that and it should be two slices.
+A workable slice traces an entry point to its consequential operations and stores. Include background jobs and internal consumers as entry points. Split diagrams when readability suffers, preserving links across them.
 
 ### Pass 2 — full analysis, per slice
 
-Run Stages A to C below on each chosen slice. One slice typically yields twenty to thirty threats, which is a volume a team can actually work through.
+Run Stages A to C below on each chosen slice. Threat counts follow the evidence; do not target a quota.
 
 ### Record what you did not examine
 
@@ -72,7 +72,7 @@ Without this, a reader assumes the whole system was covered. An unstated gap is 
 
 ### Scoping failures to avoid
 
-**Trying to be complete.** You cannot be, and the attempt consumes the time that would have produced a few real fixes.
+**Claiming more coverage than performed.** An inventory can be fully reviewed within stated limits without proving the absence of vulnerabilities. Record unavailable evidence and unfinished flows.
 
 **Slicing by module.** Produces scattered findings and hides real attack paths.
 
@@ -138,7 +138,7 @@ Run the same STRIDE analysis as `references/threat-modeling.md`, but with one ad
 
 This distinction drives everything downstream. A confirmed cross-account access finding and a theoretical one are the same severity but wildly different urgency, and mixing them makes the report unactionable.
 
-Confirm the severe ones. For anything Critical or High, spend the time to reproduce it — a confirmed finding with a reproduction is a work item, an unconfirmed one is a discussion.
+Prioritize verification of Critical and High candidates using available code, configuration, tests, and authorized runtime evidence. A review request does not authorize live exploitation, load testing, or production mutation. If reproduction is unavailable or outside scope, preserve the evidence and label runtime confirmation as pending; do not fabricate it or stop the rest of the review.
 
 ### Checks that pay off quickly
 

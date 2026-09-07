@@ -1,6 +1,6 @@
 # Secure System Design
 
-An Agent Skill for designing backend systems and reviewing existing architecture. It connects requirements, high-level design, threat modeling, implementation specifications, and test planning.
+An Agent Skill for secure backend design and deep service-by-service architecture reviews. It connects requirements, threat modeling, implementation planning, and human-readable HTML reports.
 
 The skill's invocation name is **`system-design-threat-model`**, as defined in [SKILL.md](SKILL.md).
 
@@ -12,6 +12,8 @@ The skill's invocation name is **`system-design-threat-model`**, as defined in [
 - Feeds architectural mitigations back into the design.
 - Produces function-level specifications and tests linked to threats.
 - Reviews existing systems and produces prioritized remediation plans.
+- Reviews all services one by one, tracks coverage, and traces cross-service attack paths.
+- Produces an offline HTML report with linked diagrams, threats, and remediation details.
 
 Start with what you already have: an idea, requirements, an HLD, a diagram, code, or a threat list. The workflow starts at the relevant stage.
 
@@ -29,7 +31,19 @@ Start with what you already have: an idea, requirements, an HLD, a diagram, code
 
 For an existing system, reconstruct the architecture from available evidence, assess actual behavior, and produce a remediation backlog. Distinguish predicted threats from confirmed findings and record unknowns explicitly.
 
-The default output is one Markdown document. The workflow can also work with material from Threat Dragon, Excalidraw, or a wiki.
+A bounded review defaults to one Markdown document. An all-services review produces engineering Markdown plus an offline `report.html` for human review, with service coverage, DFDs, threat details, and a consolidated remediation backlog. Threat Dragon JSON is an optional export that must be checked against the target version; HTML alone is not a Threat Dragon model. The workflow can also work with material from Threat Dragon, Excalidraw, or a wiki.
+
+### Reviewing all services
+
+1. Inventory services, workers, shared infrastructure, and dependencies; record the review scope and revision.
+2. Review each service's entry points and flows in depth, including security controls, failure paths, evidence, and verification tests.
+3. Track each service as pending, in progress, reviewed, or blocked. Prioritization changes the order, not the requested coverage.
+4. Trace cross-service attack paths and reconcile identity, authorization, shared state, queues, and failure propagation.
+5. Deliver engineering Markdown and an offline HTML report with service navigation, linked DFDs and threats, and a deduplicated remediation backlog.
+
+The report separates confirmed findings from unverified threats and records coverage gaps. Proposed fixes remain open until verified. Threat Dragon export is available on request and requires validation against the target version.
+
+This repository contains instructions for the agent to generate these artifacts during a review; it does not include a standalone report application.
 
 ## Installation
 
@@ -77,6 +91,15 @@ Restart your agent if the skill does not appear; Gemini CLI also supports `/skil
 
 ## Example prompts
 
+**Review all services in depth**
+
+```text
+Use system-design-threat-model to review all services in this repository.
+Inventory them first, then deeply review each service and its flows.
+Finish with cross-service attack paths and an offline HTML report.
+Track any blocked or unfinished coverage explicitly.
+```
+
 **Design a new feature**
 
 ```text
@@ -117,7 +140,8 @@ secure-system-design/
     ├── threat-modeling.md
     ├── existing-system.md
     ├── deep-dive.md
-    └── test-plan.md
+    ├── test-plan.md
+    └── service-review.md
 ```
 
 | File | Edit to change |
@@ -128,6 +152,7 @@ secure-system-design/
 | [existing-system.md](references/existing-system.md) | Existing-system reviews and remediation planning |
 | [deep-dive.md](references/deep-dive.md) | Implementation specifications |
 | [test-plan.md](references/test-plan.md) | Translating threats into verification work |
+| [service-review.md](references/service-review.md) | Deep service reviews, coverage, cross-service analysis, and HTML reports |
 
 Edit the Markdown files directly. Preserve the `name` and `description` metadata in `SKILL.md` and keep relative links valid. Re-run your installation command after editing to update the installed copy.
 

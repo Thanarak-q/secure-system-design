@@ -1,6 +1,6 @@
 ---
 name: system-design-threat-model
-description: End-to-end workflow for designing or auditing a backend system, producing a High-Level Design, a STRIDE/LINDDUN threat model, and either implementation-ready Deep Dive specs or a prioritised remediation plan. Use this whenever the user is designing a backend feature, service, or API, and equally whenever they want to threat model, security-review, audit, or fix a system that already runs — including requests to "design a system", "write an HLD", "do threat modeling", "make a DFD", "review my architecture", "find security issues in this service", "turn this design into implementation specs", or when they share an architecture diagram, HLD document, Threat Dragon file, or existing code and ask what to do next. Handles entering at any stage, so use it even when they already have part of the work done.
+description: Design backend systems or review existing services with HLDs, STRIDE/LINDDUN threat models, implementation specifications, and remediation plans. Use for architecture reviews, threat modeling, and deep service-by-service reviews of all services, including cross-service attack paths and human-readable HTML reports.
 ---
 
 # System Design with Threat Modeling
@@ -13,13 +13,15 @@ Produce three linked artifacts for a backend feature:
 
 The value is in the links between them. Threat modeling finds design flaws that get folded back into the HLD, and each Deep Dive line traces to a threat it mitigates. A threat model that changes nothing has failed, no matter how many threats it lists.
 
-## Two modes
+## Review modes
 
 **Designing something new** — Stages 1 to 7 below.
 
 **Working on something that already runs** — read `references/existing-system.md` instead. The flow inverts: reconstruct the diagram from the running system, verify threats rather than predicting them, and produce a remediation backlog instead of a spec. Use this mode whenever the system is deployed, whenever the user shares existing code or config, or whenever they ask to review, audit, or fix something rather than design it.
 
-Anything larger than a single feature needs scoping before analysis — the reference opens with how. Attempting a whole system at once produces a document too large to act on.
+**Reviewing all services** — read `references/service-review.md`, then use the existing-system and threat-modeling references for each service. Inventory every in-scope service, review its flows deeply, then reconcile cross-service attack paths. Prioritization determines order, not permission to drop services. Produce an HTML report alongside the engineering Markdown by default in this mode.
+
+For a bounded review, scope the requested flows first. For an all-services review, keep a coverage ledger and work in manageable batches until every service is reviewed or explicitly blocked.
 
 The difference matters. In an existing system you can send the request and see what happens, so assumptions become checks — and a confirmed finding carries entirely different weight from a predicted one.
 
@@ -39,6 +41,7 @@ Ask or infer, then jump in at the right stage. Do not restart from requirements 
 | A threat list, all Open | Stage 5 |
 | Threats with mitigations | Stage 6 |
 | Everything | Stage 7 |
+| All services or a multi-service deep review | `references/service-review.md` |
 | A running system | `references/existing-system.md` |
 
 State which stage you are entering and why, in one line. Then work.
@@ -140,7 +143,7 @@ The highest-value tests are the ones that span multiple functions. Anyone testin
 
 ## Output format
 
-Default to a single markdown file with all stages, unless the user has a tool they are already working in (Threat Dragon, Excalidraw, a wiki). Match their tool if they have one.
+For a bounded review, default to a single markdown file with all stages. For all-services reviews or an explicit HTML request, follow `references/service-review.md` for the linked Markdown and offline HTML deliverables. Otherwise, adapt the output when the user has a tool they are already working in (Threat Dragon, Excalidraw, a wiki). Match their tool if they have one.
 
 For Excalidraw, emit clipboard JSON they can paste — one text element per function spec, laid out in columns. Never silently drop elements they already had; ask for the current contents or add only new elements.
 
