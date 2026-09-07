@@ -242,15 +242,15 @@ Track them anyway. Transferred does not mean resolved, and an unanswered transfe
 
 ## Reporting
 
-Two audiences, two documents.
+Serve two audiences using the output format selected in `SKILL.md`. A bounded review defaults to one Markdown document with an executive summary and engineering detail. An all-services review, or an explicit HTML request, adds the offline HTML report described in `service-review.md`.
 
-**For engineers** — the full finding list with reproductions, ordered by the backlog above.
+**For engineers** — the full finding list with evidence and available reproductions, ordered by the backlog above. Label verification that could not be performed.
 
-**For everyone else** — a page that says what was examined, what was found grouped by severity, what is being fixed and when, and what is being accepted and why. No STRIDE categories, no element names.
+**For everyone else** — an executive summary explaining what was examined, findings grouped by severity and evidence state, planned work, and recorded risk decisions. Distinguish proposed work from committed work; do not invent owners or dates. Keep framework terminology and diagram element identifiers in the engineering detail.
 
-Both open with the scope statement from Stage 0. A reader who does not know what was left out will assume nothing was.
+Open each deliverable with the scope statement from Stage 0. Derive the summary and detail from the same review records so coverage, findings, and statuses agree. A reader who does not know what was left out will assume nothing was.
 
-The second one is what determines whether the work gets prioritised. Findings nobody outside the team can read do not get scheduled.
+The executive summary helps determine whether the work gets prioritised. Findings nobody outside the team can read do not get scheduled.
 
 ### Do not inflate
 

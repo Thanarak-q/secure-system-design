@@ -165,7 +165,7 @@ Naming the tension and resolving it deliberately is stronger evidence of thinkin
 
 ## Question 3 — What are we going to do?
 
-Every threat needs a mitigation and a status. A list of threats all marked Open means no decision has been made.
+Every threat needs a treatment decision or an explicit blocker, and a status with supporting rationale. Threats may remain Open after a mitigation is proposed while implementation or verification is pending. Record the next action and owner, or mark the owner as unknown.
 
 | Status | Means |
 |---|---|
@@ -173,7 +173,7 @@ Every threat needs a mitigation and a status. A list of threats all marked Open 
 | Accepted | Understood, deliberately not addressed, reason recorded |
 | Transferred | Another team owns it |
 | Out of scope | Outside this feature's boundary |
-| Open | Genuinely undecided, usually blocked on an answer |
+| Open | Unresolved: treatment undecided, implementation pending, verification pending, or blocked; record the reason and next action |
 
 ### Writing mitigations
 

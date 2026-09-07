@@ -11,7 +11,7 @@ Produce three linked artifacts for a backend feature:
 2. **Threat model** — what can go wrong, what we will do about it
 3. **Deep Dive** — function-level specs an engineer can implement from
 
-The value is in the links between them. Threat modeling finds design flaws that get folded back into the HLD, and each Deep Dive line traces to a threat it mitigates. A threat model that changes nothing has failed, no matter how many threats it lists.
+The value is in the links between them. Threat modeling finds design flaws that get folded back into the HLD, and each Deep Dive line traces to a threat it mitigates. Judge the review by coverage, evidence, and justified decisions. A review may confirm that existing controls are sufficient without requiring design changes.
 
 ## Review modes
 
@@ -38,7 +38,8 @@ Ask or infer, then jump in at the right stage. Do not restart from requirements 
 | Entities but no API | Stage 2b |
 | An HLD or architecture diagram | Stage 3 |
 | A DFD but no threats | Stage 4 |
-| A threat list, all Open | Stage 5 |
+| A threat list without mitigation decisions | Stage 4, question 3: mitigations and status |
+| Open threats with proposed mitigations | Stage 5 for design refinement; existing-system mode for remediation and verification |
 | Threats with mitigations | Stage 6 |
 | Everything | Stage 7 |
 | All services or a multi-service deep review | `references/service-review.md` |
@@ -107,7 +108,7 @@ Four questions, in order:
 3. **What are we going to do about it?** — Mitigation per threat, then a status decision
 4. **Did we do a good job?** — Review for gaps
 
-Two failure modes to avoid. The first is a single undifferentiated backend process, which makes every threat too vague to act on. The second is stopping at "Open" for every threat, which means no decision was actually made. Both are covered in the reference.
+Two failure modes to avoid. The first is a single undifferentiated backend process, which makes every threat too vague to act on. The second is leaving threats Open without a rationale, proposed action, or explicit blocker. Open remains valid while implementation or verification is pending. Both are covered in the reference.
 
 ## Stage 5 — Refine the HLD
 
@@ -117,7 +118,7 @@ Split mitigations into two piles:
 
 **Pile B — implementation detail.** Query shapes, timeouts, header values. These become Deep Dive requirements.
 
-Pile A is the proof that threat modeling worked. Name the specific changes it produced — that is what makes the difference between a document and a process.
+When architectural changes are needed, name them and link each to the threats it addresses. If existing architecture is sufficient, record the supporting evidence and any remaining implementation work; do not invent changes to demonstrate progress.
 
 ## Stage 6 — Deep Dive
 
