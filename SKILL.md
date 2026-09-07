@@ -1,9 +1,9 @@
 ---
-name: system-design-threat-model
+name: secure-system-design
 description: Design backend systems or review existing services with HLDs, STRIDE/LINDDUN threat models, implementation specifications, and remediation plans. Use for architecture reviews, threat modeling, and deep service-by-service reviews of all services, including cross-service attack paths and human-readable HTML reports.
 ---
 
-# System Design with Threat Modeling
+# Secure System Design
 
 Produce three linked artifacts for a backend feature:
 

@@ -2,7 +2,7 @@
 
 An Agent Skill for secure backend design and deep service-by-service architecture reviews. It connects requirements, threat modeling, implementation planning, and human-readable HTML reports.
 
-The skill's invocation name is **`system-design-threat-model`**, as defined in [SKILL.md](SKILL.md).
+The skill's invocation name is **`secure-system-design`**, as defined in [SKILL.md](SKILL.md).
 
 ## What it does
 
@@ -72,19 +72,19 @@ npx --yes skills add Thanarak-q/secure-system-design --list
 In Codex:
 
 ```text
-$system-design-threat-model review my system architecture
+$secure-system-design review my system architecture
 ```
 
 In Claude Code:
 
 ```text
-/system-design-threat-model review my system architecture
+/secure-system-design review my system architecture
 ```
 
 In Hermes Agent or Gemini CLI:
 
 ```text
-Use system-design-threat-model to review my system architecture.
+Use secure-system-design to review my system architecture.
 ```
 
 Restart your agent if the skill does not appear; Gemini CLI also supports `/skills reload`. These instructions target the coding tools, not consumer chat websites. Installer support does not imply that the skill's behavior has been tested in every host.
@@ -94,7 +94,7 @@ Restart your agent if the skill does not appear; Gemini CLI also supports `/skil
 **Review all services in depth**
 
 ```text
-Use system-design-threat-model to review all services in this repository.
+Use secure-system-design to review all services in this repository.
 Inventory them first, then deeply review each service and its flows.
 Finish with cross-service attack paths and an offline HTML report.
 Track any blocked or unfinished coverage explicitly.
@@ -103,14 +103,14 @@ Track any blocked or unfinished coverage explicitly.
 **Design a new feature**
 
 ```text
-Use system-design-threat-model to design a backend API for file uploads.
+Use secure-system-design to design a backend API for file uploads.
 Start with requirements and identify the information you need from me.
 ```
 
 **Review an existing service**
 
 ```text
-Use system-design-threat-model to review this service's authentication
+Use secure-system-design to review this service's authentication
 and file-access flows. Produce a prioritized remediation plan and label
 unverified assumptions clearly.
 ```
@@ -118,14 +118,14 @@ unverified assumptions clearly.
 **Continue from an HLD**
 
 ```text
-Use system-design-threat-model with this HLD. Build the data flow diagram,
+Use secure-system-design with this HLD. Build the data flow diagram,
 identify threats, and update the architecture with the required mitigations.
 ```
 
 **Plan implementation**
 
 ```text
-Use system-design-threat-model to turn this threat model and its mitigations
+Use secure-system-design to turn this threat model and its mitigations
 into implementation specifications and a test plan.
 ```
 
@@ -135,6 +135,8 @@ into implementation specifications and a test plan.
 secure-system-design/
 ├── README.md
 ├── SKILL.md
+├── agents/
+│   └── openai.yaml
 └── references/
     ├── hld.md
     ├── threat-modeling.md
