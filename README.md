@@ -115,12 +115,7 @@ Use secure-system-design with this HLD. Build the data flow diagram,
 identify threats, and update the architecture with the required mitigations.
 ```
 
-**Plan implementation**
 
-```text
-Use secure-system-design to turn this threat model and its mitigations
-into implementation specifications and a test plan.
-```
 
 ## Publishing on GitHub
 
