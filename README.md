@@ -49,24 +49,45 @@ This repository contains instructions for the agent to generate these artifacts 
 
 ## Installation
 
-Requires Node.js and npm. Install for one agent:
+Requires Node.js and npm. Pick your agent and run its line.
+
+**Codex**
 
 ```sh
 npx --yes skills add Thanarak-q/secure-system-design --global --yes --agent codex
 ```
 
-Or for several at once, by listing them:
+Invoke with `$secure-system-design review my system architecture`
+
+**Claude Code**
+
+```sh
+npx --yes skills add Thanarak-q/secure-system-design --global --yes --agent claude-code
+```
+
+Invoke with `/secure-system-design review my system architecture`
+
+**Hermes Agent**
+
+```sh
+npx --yes skills add Thanarak-q/secure-system-design --global --yes --agent hermes-agent
+```
+
+Invoke with `Use secure-system-design to review my system architecture.`
+
+**Gemini CLI**
+
+```sh
+npx --yes skills add Thanarak-q/secure-system-design --global --yes --agent gemini-cli
+```
+
+Invoke with `Use secure-system-design to review my system architecture.`
+
+**Several agents at once** — list them after `--agent`
 
 ```sh
 npx --yes skills add Thanarak-q/secure-system-design --global --yes --agent codex claude-code hermes-agent gemini-cli
 ```
-
-| Agent | `--agent` value | Invoke it with |
-| --- | --- | --- |
-| Codex | `codex` | `$secure-system-design review my system architecture` |
-| Claude Code | `claude-code` | `/secure-system-design review my system architecture` |
-| Hermes Agent | `hermes-agent` | `Use secure-system-design to review my system architecture.` |
-| Gemini CLI | `gemini-cli` | `Use secure-system-design to review my system architecture.` |
 
 ### Flags
 
