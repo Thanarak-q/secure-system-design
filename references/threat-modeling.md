@@ -96,7 +96,84 @@ Flows crossing a boundary are where threats concentrate. Get containment right b
 
 ### One diagram per flow
 
-Do not draw everything at once. Separate diagrams for the main request path, the management path, and the admin path. Each stays readable; together they cover the system.
+Do not draw everything at once. Separate diagrams for the main request path, the
+management path, and the admin path. Each stays readable; together they cover the
+system. The flow is also the unit of work for everything that follows — see below.
+
+---
+
+## Work one data flow at a time
+
+Analysing the whole system at once produces shallow threats on every element.
+Analysing one flow at a time produces deep threats on a few, and the few are what
+gets fixed. Hold one flow in your head, exhaust it, then move.
+
+A flow here means an end-to-end path — an entry point through to its consequential
+operations and stores — not a single arrow and not a module. `DF1 authenticated
+upload, client to object storage` is a flow. `the storage service` is not.
+
+### The flow ledger
+
+Enumerate the flows first, order them, and record the order before analysing any of
+them. Writing the list down is what stops the interesting flow from absorbing the
+whole review:
+
+| Flow ID | Name | Entry point | Crosses | Priority | State | Threats | Next step |
+|---|---|---|---|---|---|---|---|
+| DF1 | Authenticated upload | `POST /files` | TB1, TB3 | 1 | analysed | 7 | — |
+| DF2 | Admin key rotation | `POST /admin/keys` | TB2 | 2 | in progress | 3 | stopped at P5 |
+| DF3 | Nightly reconcile job | cron | TB4 | 3 | pending | — | — |
+
+Order by exposure and blast radius: unauthenticated reach first, then credentials
+and money, then shared state, then privilege escalation paths, then recently
+changed code. Priority sets the order, never permission to drop the tail.
+
+### The loop, per flow
+
+Run all of this on one flow before opening the next:
+
+1. **Draw it.** Its own DFD, with every process that makes a security decision as
+   its own circle. Assign element IDs, or reuse the IDs a shared element already has.
+2. **Fill the attribute table** for the elements on this flow — the table above.
+   Do not start STRIDE with blanks in it.
+3. **Walk it once as a narrative**, step by step, naming what is carried and what
+   is trusted at each hop. Threats surface here before any category is applied.
+4. **STRIDE per element**, element by element along the flow, in flow order.
+   Ask every category the element type allows, including the ones you expect to
+   come back empty.
+5. **Write the full record** for each supported threat, immediately. Not a note to
+   expand later — the reasoning is in your head now and will not be in an hour.
+6. **Fill this flow's coverage rows.** Every cell gets a threat ID, `—`, `n/a`, or
+   `skipped` with a reason. The row is what proves the flow was finished.
+7. **Mark it analysed in the ledger**, then state in one line what the next flow is
+   and why, before starting it.
+
+Step 6 is the gate. A flow is not analysed because it felt covered; it is analysed
+when its coverage rows have no empty cells.
+
+### What crosses flows, and what waits
+
+An element appears in several flows. Analyse it in the first flow that reaches it,
+and in later flows ask only what is new: this flow reaches it with a different
+privilege, a different input, or at a different point in the order. Reference the
+existing threat ID rather than authoring a second one that says the same thing.
+
+Three things are deliberately deferred until every flow is done, because doing them
+early forces you back out of the flow you are in:
+
+- **Deduplication by mitigation** — grouping needs the whole set.
+- **Cross-flow attack paths** — chains that use one flow's output as another's input.
+- **Severity normalisation** — comparing a High in DF1 against a High in DF4.
+
+Keep a running scratch list of candidates for all three as you go, and resolve them
+in a final pass.
+
+### When a later flow contradicts an earlier one
+
+It will. A control you credited in DF1 turns out to be bypassable through DF3.
+Go back and fix DF1's records — the threat, its severity, its status — rather than
+leaving two accounts of the same control in the same report. Note what changed and
+why. The stale version is what the next reader will follow.
 
 ---
 

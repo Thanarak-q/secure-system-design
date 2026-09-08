@@ -8,7 +8,7 @@ The skill's invocation name is **`secure-system-design`**, as defined in [SKILL.
 
 - Designs new backend features, services, and APIs.
 - Builds data flow diagrams and identifies trust boundaries.
-- Applies STRIDE threat analysis and optional LINDDUN privacy analysis, with per-element attributes, stable element IDs, and a coverage matrix that separates cleared elements from skipped ones.
+- Applies STRIDE threat analysis and optional LINDDUN privacy analysis one data flow at a time, with per-element attributes, stable element IDs, and a coverage matrix that separates cleared elements from skipped ones.
 - Feeds architectural mitigations back into the design.
 - Produces function-level specifications and tests linked to threats.
 - Reviews existing systems and produces prioritized remediation plans.
@@ -18,6 +18,10 @@ The skill's invocation name is **`secure-system-design`**, as defined in [SKILL.
 Start with what you already have: an idea, requirements, an HLD, a diagram, code, or a threat list. The workflow starts at the relevant stage.
 
 ## Workflow
+
+<p align="center">
+  <img src="assets/workflow.svg" alt="Requirements to Entities to API to HLD to Threat model to Deep Dive to Test plan, with a return loop from any stage to any earlier one." width="100%">
+</p>
 
 | Stage | Result |
 | --- | --- |
@@ -31,7 +35,7 @@ Start with what you already have: an idea, requirements, an HLD, a diagram, code
 
 For an existing system, reconstruct the architecture from available evidence, assess actual behavior, and produce a remediation backlog. Distinguish predicted threats from confirmed findings and record unknowns explicitly.
 
-A bounded review defaults to one Markdown document. An all-services review produces engineering Markdown plus an offline `report.html` for human review, with service coverage, DFDs, threat details, and a consolidated remediation backlog. Deliverables land in `security-review/`, and both views are generated from a single set of threat records so their IDs, counts, and statuses cannot drift apart. Threat Dragon JSON is an optional export that must be checked against the target version; HTML alone is not a Threat Dragon model. The workflow can also work with material from Threat Dragon, Excalidraw, or a wiki.
+A bounded review defaults to one Markdown document. An all-services review produces engineering Markdown plus an offline `report.html`, built from [assets/report-template.html](assets/report-template.html): a system design summary, then one section per data flow carrying that flow's diagram and only the threats found on it, then cross-flow attack paths, the remediation backlog, and the coverage matrix. Deliverables land in `security-review/`, and both views are generated from a single set of threat records so their IDs, counts, and statuses cannot drift apart. The workflow can also work with material from Threat Dragon, Excalidraw, or a wiki; Threat Dragon JSON is an optional export that must be validated against the target version, and HTML alone is not a Threat Dragon model.
 
 ### Reviewing all services
 
@@ -40,8 +44,6 @@ A bounded review defaults to one Markdown document. An all-services review produ
 3. Track each service as pending, in progress, reviewed, or blocked. Prioritization changes the order, not the requested coverage.
 4. Trace cross-service attack paths and reconcile identity, authorization, shared state, queues, and failure propagation.
 5. Deliver engineering Markdown and an offline HTML report with service navigation, linked DFDs and threats, and a deduplicated remediation backlog.
-
-The report separates confirmed findings from unverified threats and records coverage gaps. Proposed fixes remain open until verified. Threat Dragon export is available on request and requires validation against the target version.
 
 This repository contains instructions for the agent to generate these artifacts during a review; it does not include a standalone report application.
 
@@ -137,6 +139,9 @@ secure-system-design/
 ├── SKILL.md
 ├── agents/
 │   └── openai.yaml
+├── assets/
+│   ├── report-template.html
+│   └── workflow.svg
 └── references/
     ├── hld.md
     ├── threat-modeling.md
@@ -155,12 +160,14 @@ secure-system-design/
 | [deep-dive.md](references/deep-dive.md) | Implementation specifications |
 | [test-plan.md](references/test-plan.md) | Translating threats into verification work |
 | [service-review.md](references/service-review.md) | Deep service reviews, coverage, cross-service analysis, and HTML reports |
+| [report-template.html](assets/report-template.html) | Look and structure of the HTML report — styling, DFD shapes, severity badges, section order |
+| [workflow.svg](assets/workflow.svg) | The workflow diagram in this README |
 
 Edit the Markdown files directly. Preserve the `name` and `description` metadata in `SKILL.md` and keep relative links valid. Re-run your installation command after editing to update the installed copy.
 
 ## Publishing on GitHub
 
-Push this folder with `SKILL.md` and `references/` at the repository root. Add a `LICENSE` file with your chosen terms for reuse. The skill itself needs no build step or package dependencies.
+Push this folder with `SKILL.md`, `references/`, and `assets/` at the repository root. Add a `LICENSE` file with your chosen terms for reuse. The skill itself needs no build step or package dependencies.
 
 ## Host documentation
 

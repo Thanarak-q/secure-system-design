@@ -111,6 +111,14 @@ Four questions, in order:
 3. **What are we going to do about it?** — Mitigation per threat, then a status decision
 4. **Did we do a good job?** — Review for gaps
 
+**Work one data flow at a time.** List the flows and their order first, then run
+questions 1 to 3 on a single flow — diagram, element attributes, STRIDE, threat
+records, coverage rows — before opening the next one. One flow held in mind
+produces deeper threats than the whole system held loosely, and a flow's coverage
+rows with no empty cells is what says it is finished. Deduplication, cross-flow
+attack paths, and severity normalisation wait for a final pass. The reference has
+the loop and the flow ledger.
+
 Two failure modes to avoid. The first is a single undifferentiated backend process, which makes every threat too vague to act on. The second is leaving threats Open without a rationale, proposed action, or explicit blocker. Open remains valid while implementation or verification is pending. Both are covered in the reference.
 
 ## Stage 5 — Refine the HLD
@@ -147,7 +155,7 @@ The highest-value tests are the ones that span multiple functions. Anyone testin
 
 ## Output format
 
-For a bounded review, default to a single markdown file with all stages. For all-services reviews or an explicit HTML request, follow `references/service-review.md` for the linked Markdown and offline HTML deliverables. Otherwise, adapt the output when the user has a tool they are already working in (Threat Dragon, Excalidraw, a wiki). Match their tool if they have one.
+For a bounded review, default to a single markdown file with all stages. For all-services reviews or an explicit HTML request, follow `references/service-review.md` for the linked Markdown and offline HTML deliverables, and start `report.html` from `assets/report-template.html` — copy it and fill it in rather than writing a report page from scratch. Otherwise, adapt the output when the user has a tool they are already working in (Threat Dragon, Excalidraw, a wiki). Match their tool if they have one.
 
 Unless the user names a location, write deliverables into `security-review/`:
 
@@ -158,6 +166,12 @@ security-review/
 ├── threats.yaml   the threat records both views are generated from
 └── diagrams/      rendered SVG, when diagrams are not inlined
 ```
+
+The HTML report is structured the way a Threat Dragon review reads: a system design
+summary, then one section per data flow carrying that flow's diagram and only the
+threats STRIDE produced on it, then the cross-flow, backlog, and coverage sections.
+`assets/report-template.html` is that structure already built — offline, printable,
+theme-aware, with the severity, status, and evidence badges defined.
 
 `threats.yaml` holds one entry per threat in the record format from `references/threat-modeling.md`, and is the only place a threat is authored. Markdown and HTML are views of it — that is what keeps their IDs, counts, severities, and statuses in agreement by construction instead of by proofreading, and it makes a Threat Dragon export a transformation rather than a re-authoring. A bounded review with a handful of threats can keep the records inline in `report.md` instead; keep them in one section rather than scattered through the prose.
 

@@ -51,15 +51,32 @@ Deduplicate shared root causes into one remediation item while preserving every 
 
 For an all-services review, generate engineering Markdown and a self-contained `report.html`. For a bounded HTML request, include only the requested scope. Generate both views from the threat records described in `SKILL.md` — `security-review/threats.yaml` — so IDs, counts, severity, and status agree by construction rather than by proofreading. Keep detailed evidence in Markdown or linked report sections; never maintain two findings lists.
 
+### Start from the template
+
+`assets/report-template.html` is the report structure already built — offline, printable, theme-aware, with the DFD shape styles, the severity/status/evidence badges, the coverage-matrix cell classes, and a progressive filter. Copy it to `security-review/report.html`, fill the `{{PLACEHOLDERS}}`, repeat the marked blocks, and delete the sections that do not apply. Do not write a report page from scratch, and do not restyle the template per review — a reader who has seen one of these reports should recognise the next one.
+
+Change the template itself only when a structural need recurs across reviews, and change it in `assets/`, not in a generated report.
+
+### Structure: design first, then one section per data flow
+
+The report reads the way a Threat Dragon review reads. Two things stay separate:
+
+1. **The system design** — purpose, assets, the overview diagram, the element table with the attributes that drive threats, trust boundaries, and the design decisions on record. A reader who has never seen the service should be able to follow the rest after this section alone. Nothing about what is wrong belongs here.
+2. **One section per data flow** — that flow's diagram, its numbered steps, the STRIDE summary table for its elements, then the full threat records for that flow and nothing else, and finally what was considered on it and not supported.
+
+Threats live under the flow they were found on, not in one undifferentiated list. Cross-flow attack paths, the deduplicated backlog, the coverage matrix, and open questions follow as their own sections. This mirrors the per-flow working order in `threat-modeling.md`, so a flow finished during analysis is a report section that is finished too.
+
+### Technical requirements
+
 The HTML must open directly from disk without a server or internet connection. Use embedded CSS, native anchors, tables, and `<details>` disclosures. Render diagrams as inline SVG, or embed locally rendered images; raw Mermaid text without a renderer does not satisfy the visual requirement. Add only small inline JavaScript when search or filtering materially helps a large report. Keep full content readable with JavaScript disabled.
 
 Include:
 
 - Scope, revision/date, coverage counts and denominator, limitations, and confirmed versus unverified findings clearly separated.
 - A service index with review states and links to each service section.
-- A system DFD and detailed service/flow DFDs with readable labels and a legend.
+- A system DFD, and a DFD per data flow with readable labels and a legend.
 - Threat entries linked from diagram element/flow IDs, including evidence, severity rationale, remediation status, and verification work.
-- Cross-service attack paths and a deduplicated remediation backlog.
+- Cross-service and cross-flow attack paths, and a deduplicated remediation backlog.
 - Open questions, blocked work, and residual risks. If no threats were supported, show coverage and limits rather than a blank report or an “all secure” badge.
 
 Use semantic headings, keyboard-accessible links/disclosures, visible focus, sufficient contrast, and print styles. Never rely only on color to convey severity. Escape source snippets, labels, and findings as text; never insert untrusted content as raw HTML or executable script. Exclude credential values and unnecessary personal data. Do not fetch remote fonts, scripts, or diagram services with confidential architecture data.

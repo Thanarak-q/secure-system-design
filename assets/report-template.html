@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<!--
+  Secure System Design — threat model report template.
+
+  Fill the {{PLACEHOLDERS}} and delete every block you do not use.
+  Blocks marked with a REPEAT comment are copied once per item.
+
+  Rules this template already satisfies — keep them true:
+    - opens from disk, no server, no network. No remote font, script, or image.
+    - every diagram is inline SVG. Mermaid source alone does not count.
+    - severity and status are carried by text + shape, never by colour alone.
+    - full content readable with JavaScript disabled (the filter is progressive).
+    - print stylesheet included.
+  Escape every value you interpolate: & < > " become &amp; &lt; &gt; &quot;.
+  Never paste a credential value, a token, or a personal-data row.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{SYSTEM_NAME}} — Threat Model Report</title>
+<style>
+:root{
+  --bg:#f7f7f5; --panel:#fff; --ink:#1a1a18; --muted:#5f5f58;
+  --line:#dedcd6; --line-soft:#ebe9e4; --accent:#3b5bdb; --accent-soft:#eef1fd;
+  --crit:#8b1a1a; --crit-bg:#fdeaea; --high:#9a4a06; --high-bg:#fdf0e4;
+  --med:#7a5c00;  --med-bg:#fcf6e0;  --low:#3d5a3d;  --low-bg:#edf4ed;
+  --ok:#1f5c3d; --open:#8b1a1a; --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#15151a; --panel:#1d1d23; --ink:#e8e8e4; --muted:#a3a39c;
+    --line:#33333c; --line-soft:#26262e; --accent:#8ea4ff; --accent-soft:#232a45;
+    --crit:#ff9a9a; --crit-bg:#3a1c1c; --high:#f5bd85; --high-bg:#3a2a17;
+    --med:#e8d48a;  --med-bg:#332d16;  --low:#a7cfa7;  --low-bg:#1e2b1e;
+    --ok:#8fd6ae; --open:#ff9a9a;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:1rem}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 var(--sans);
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding:0 1.5rem 6rem}
+a{color:var(--accent)}
+a:focus-visible,summary:focus-visible,button:focus-visible,input:focus-visible{
+  outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+
+/* ---------- masthead ---------- */
+header.masthead{border-bottom:1px solid var(--line);background:var(--panel);
+  padding:2.5rem 0 2rem;margin-bottom:2rem}
+header.masthead .wrap{padding-bottom:0}
+.eyebrow{font:600 11px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 .8rem}
+h1{font-size:2.1rem;line-height:1.15;margin:0 0 1rem;letter-spacing:-.02em}
+.meta{display:flex;flex-wrap:wrap;gap:.4rem 2rem;margin:0;padding:0;list-style:none;
+  font-size:.85rem;color:var(--muted)}
+.meta b{color:var(--ink);font-weight:600}
+
+/* ---------- layout ---------- */
+h2{font-size:1.35rem;letter-spacing:-.01em;margin:3rem 0 .3rem;
+  padding-top:1.2rem;border-top:1px solid var(--line)}
+h3{font-size:1.05rem;margin:2rem 0 .5rem}
+h4{font-size:.95rem;margin:1.4rem 0 .4rem}
+.lede{color:var(--muted);margin:.2rem 0 1.4rem}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+  padding:1.2rem 1.4rem;margin:1rem 0}
+
+/* ---------- number strip ---------- */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:.75rem;margin:1.2rem 0 2rem;padding:0;list-style:none}
+.stats li{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+  padding:.9rem 1rem}
+.stats .n{display:block;font:700 1.7rem/1 var(--sans);letter-spacing:-.02em}
+.stats .k{display:block;font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--muted);margin-top:.35rem}
+
+/* ---------- tables ---------- */
+.tablewrap{overflow-x:auto;margin:1rem 0;border:1px solid var(--line);border-radius:10px;
+  background:var(--panel)}
+table{border-collapse:collapse;width:100%;font-size:.88rem}
+th,td{text-align:left;padding:.6rem .8rem;border-bottom:1px solid var(--line-soft);
+  vertical-align:top}
+thead th{position:sticky;top:0;background:var(--panel);border-bottom:1px solid var(--line);
+  font-size:.74rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+tbody tr:last-child td{border-bottom:0}
+td code,th code{font:.85em var(--mono)}
+.matrix td{text-align:center;font:.82rem var(--mono)}
+.matrix td:first-child,.matrix th:first-child{text-align:left;font-family:var(--sans)}
+.na{color:var(--muted)}
+.cleared{color:var(--muted);font-weight:700}     /* the em-dash cell: considered, nothing found */
+.skipped{color:var(--high);font-weight:700}      /* not analysed — needs a reason below */
+
+/* ---------- badges (shape + text, never colour alone) ---------- */
+.badge{display:inline-block;font:600 .72rem/1.5 var(--sans);letter-spacing:.03em;
+  padding:.1rem .5rem;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
+.sev-critical{color:var(--crit);background:var(--crit-bg)}
+.sev-high    {color:var(--high);background:var(--high-bg)}
+.sev-medium  {color:var(--med); background:var(--med-bg)}
+.sev-low     {color:var(--low); background:var(--low-bg)}
+.badge::before{font-family:var(--mono);margin-right:.35em}
+.sev-critical::before{content:"!!!"}
+.sev-high::before{content:"!!"}
+.sev-medium::before{content:"!"}
+.sev-low::before{content:"·"}
+.st{display:inline-block;font:600 .72rem/1.5 var(--sans);padding:.1rem .5rem;
+  border-radius:4px;border:1px solid var(--line);background:var(--bg);white-space:nowrap}
+.st-open::before{content:"○ "}
+.st-mitigated::before{content:"● ";color:var(--ok)}
+.st-accepted::before{content:"◐ "}
+.st-transferred::before{content:"→ "}
+.st-oos::before{content:"× "}
+.ev{font:600 .72rem/1.5 var(--sans);color:var(--muted)}
+.ev-confirmed{color:var(--ink)}
+.ev-confirmed::before{content:"✔ "}
+.ev-likely::before{content:"~ "}
+.ev-theoretical::before{content:"? "}
+
+/* ---------- threat cards ---------- */
+.threat{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--muted);
+  border-radius:8px;margin:.8rem 0;overflow:hidden}
+.threat[data-sev="Critical"]{border-left-color:var(--crit)}
+.threat[data-sev="High"]    {border-left-color:var(--high)}
+.threat[data-sev="Medium"]  {border-left-color:var(--med)}
+.threat[data-sev="Low"]     {border-left-color:var(--low)}
+.threat > summary{cursor:pointer;padding:.7rem 1rem;display:flex;flex-wrap:wrap;
+  align-items:center;gap:.5rem;list-style:none;font-weight:600}
+.threat > summary::-webkit-details-marker{display:none}
+.threat > summary::after{content:"▸";margin-left:auto;color:var(--muted);font-weight:400}
+.threat[open] > summary::after{content:"▾"}
+.threat > summary:hover{background:var(--accent-soft)}
+.tid{font:700 .78rem var(--mono);color:var(--muted)}
+.ttitle{flex:1 1 22ch;min-width:0}
+.threat .body{padding:.2rem 1rem 1rem;border-top:1px solid var(--line-soft)}
+.threat dl{display:grid;grid-template-columns:minmax(9rem,auto) 1fr;gap:.3rem 1.2rem;
+  margin:.9rem 0 0;font-size:.9rem}
+.threat dt{font:600 .74rem/1.7 var(--sans);text-transform:uppercase;letter-spacing:.06em;
+  color:var(--muted)}
+.threat dd{margin:0}
+.threat dd ol,.threat dd ul{margin:0;padding-left:1.2rem}
+.threat dd code{font:.85em var(--mono);background:var(--bg);padding:.05em .35em;
+  border-radius:3px;border:1px solid var(--line-soft)}
+.elref{font:.78rem var(--mono);color:var(--muted)}
+
+/* ---------- diagrams ---------- */
+figure{margin:1.2rem 0;background:var(--panel);border:1px solid var(--line);
+  border-radius:10px;padding:1rem}
+figure .svgbox{overflow-x:auto}
+figure svg{display:block;max-width:100%;height:auto;margin:0 auto}
+figcaption{font-size:.82rem;color:var(--muted);margin-top:.7rem;text-align:center}
+.legend{display:flex;flex-wrap:wrap;gap:.5rem 1.4rem;margin:.8rem 0 0;padding:.8rem 0 0;
+  list-style:none;border-top:1px solid var(--line-soft);font-size:.8rem;color:var(--muted)}
+.legend li{display:flex;align-items:center;gap:.45rem}
+.legend svg{width:34px;height:20px;margin:0;flex:none}
+/* DFD stroke/fill classes used inside the inline SVGs */
+.dfd{font:12px var(--sans)}
+.dfd text{fill:var(--ink)}
+.dfd .ee   {fill:var(--panel);stroke:var(--ink);stroke-width:1.5}
+.dfd .proc {fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5}
+.dfd .store{fill:none;stroke:var(--ink);stroke-width:1.5}
+.dfd .flow {fill:none;stroke:var(--ink);stroke-width:1.4;marker-end:url(#arrow)}
+.dfd .tb   {fill:none;stroke:var(--crit);stroke-width:1.6;stroke-dasharray:7 5}
+.dfd .tblabel{fill:var(--crit);font-size:11px;font-weight:600}
+.dfd .fid  {fill:var(--muted);font:600 10px var(--mono)}
+
+/* ---------- nav / toc ---------- */
+nav.toc{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+  padding:1rem 1.3rem;margin:1.5rem 0}
+nav.toc ol{margin:.3rem 0 0;padding-left:1.3rem;columns:2;column-gap:2.5rem;font-size:.9rem}
+nav.toc li{margin:.2rem 0;break-inside:avoid}
+.flowjump{display:flex;flex-wrap:wrap;gap:.4rem;margin:1rem 0 0;padding:0;list-style:none}
+.flowjump a{display:inline-block;font:600 .8rem var(--sans);text-decoration:none;
+  border:1px solid var(--line);border-radius:999px;padding:.25rem .8rem;background:var(--panel)}
+.flowjump a:hover{border-color:var(--accent);background:var(--accent-soft)}
+
+/* ---------- filter (progressive; hidden without JS) ---------- */
+.filterbar{display:none;gap:.5rem;flex-wrap:wrap;align-items:center;margin:1rem 0}
+.filterbar.on{display:flex}
+.filterbar input{font:inherit;padding:.4rem .7rem;border:1px solid var(--line);
+  border-radius:6px;background:var(--panel);color:var(--ink);min-width:16rem}
+.filterbar button{font:600 .8rem var(--sans);padding:.35rem .8rem;border-radius:999px;
+  border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.filterbar button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.note{font-size:.85rem;color:var(--muted)}
+.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.callout{border-left:3px solid var(--accent);background:var(--accent-soft);
+  padding:.7rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;font-size:.9rem}
+
+/* ---------- print ---------- */
+@media print{
+  :root{--bg:#fff;--panel:#fff;--line:#bbb;--line-soft:#ddd;--ink:#000;--muted:#444}
+  body{font-size:11pt}
+  .filterbar,nav.toc,.flowjump{display:none!important}
+  .threat .body{display:block!important}
+  details{break-inside:avoid}
+  h2{break-after:avoid;page-break-after:avoid}
+  figure,.threat,.tablewrap{break-inside:avoid}
+  a[href^="#"]{text-decoration:none;color:inherit}
+  thead th{position:static}
+}
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">Threat model &amp; security review</p>
+    <h1>{{SYSTEM_NAME}}</h1>
+    <ul class="meta">
+      <li><b>Scope</b> {{SCOPE_ONE_LINE}}</li>
+      <li><b>Revision</b> <code>{{GIT_REVISION}}</code></li>
+      <li><b>Reviewed</b> {{REVIEW_DATE}}</li>
+      <li><b>Mode</b> {{design | existing-system | all-services}}</li>
+      <li><b>Method</b> STRIDE per element{{, LINDDUN privacy pass}}</li>
+    </ul>
+  </div>
+</header>
+
+<div class="wrap">
+
+<!-- ============================================================ 1. SUMMARY -->
+<section id="summary">
+  <h2>1. Summary</h2>
+  <p class="lede">{{Two or three sentences: what was reviewed, what the headline
+     finding is, and what a reader should do next. No hedging, no "all secure".}}</p>
+
+  <ul class="stats">
+    <li><span class="n">{{N}}</span><span class="k">Flows reviewed</span></li>
+    <li><span class="n">{{N}}/{{TOTAL}}</span><span class="k">Elements covered</span></li>
+    <li><span class="n">{{N}}</span><span class="k">Threats recorded</span></li>
+    <li><span class="n">{{N}}</span><span class="k">Confirmed</span></li>
+    <li><span class="n">{{N}}</span><span class="k">Critical + High</span></li>
+    <li><span class="n">{{N}}</span><span class="k">Open</span></li>
+  </ul>
+
+  <h3>Findings by severity and evidence</h3>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Severity</th><th>Confirmed</th><th>Likely</th><th>Theoretical</th><th>Total</th></tr></thead>
+    <tbody>
+      <tr><td><span class="badge sev-critical">Critical</span></td><td>{{n}}</td><td>{{n}}</td><td>{{n}}</td><td>{{n}}</td></tr>
+      <tr><td><span class="badge sev-high">High</span></td><td>{{n}}</td><td>{{n}}</td><td>{{n}}</td><td>{{n}}</td></tr>
+      <tr><td><span class="badge sev-medium">Medium</span></td><td>{{n}}</td><td>{{n}}</td><td>{{n}}</td><td>{{n}}</td></tr>
+      <tr><td><span class="badge sev-low">Low</span></td><td>{{n}}</td><td>{{n}}</td><td>{{n}}</td><td>{{n}}</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="callout">
+    <b>What this review did not cover.</b> {{Named exclusions, the reason for each,
+    and the condition that should trigger a revisit. An unstated gap reads as
+    coverage.}}
+  </div>
+
+  <nav class="toc" aria-label="Contents">
+    <b>Contents</b>
+    <ol>
+      <li><a href="#summary">Summary</a></li>
+      <li><a href="#design">System design</a></li>
+      <li><a href="#flows">Data flows &amp; STRIDE</a></li>
+      <li><a href="#cross">Cross-flow attack paths</a></li>
+      <li><a href="#backlog">Remediation backlog</a></li>
+      <li><a href="#coverage">Coverage matrix</a></li>
+      <li><a href="#questions">Open questions &amp; residual risk</a></li>
+    </ol>
+  </nav>
+</section>
+
+<!-- ====================================================== 2. SYSTEM DESIGN -->
+<section id="design">
+  <h2>2. System design</h2>
+  <p class="lede">What the system is, before anything about what is wrong with it.
+     A reader who has never seen this service should be able to follow section 3
+     after reading only this one.</p>
+
+  <h3>2.1 Purpose and assets</h3>
+  <p>{{One paragraph: what the system does and for whom.}}</p>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Asset</th><th>Where it lives</th><th>Sensitivity</th><th>Why it is worth attacking</th></tr></thead>
+    <tbody>
+      <!-- REPEAT per asset -->
+      <tr><td>{{asset}}</td><td><code>{{DS1}}</code> {{store}}</td><td>{{credentials | personal data | money | privilege}}</td><td>{{impact if reached}}</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>2.2 System overview diagram</h3>
+  <figure>
+    <div class="svgbox">
+      <!-- Inline SVG. Keep every element ID visible in the drawing so a threat
+           in section 3 can be traced back to a shape here. -->
+      <svg class="dfd" viewBox="0 0 900 380" role="img"
+           aria-label="{{Plain-language description of the system overview diagram}}">
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5"
+                  markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--ink)"/>
+          </marker>
+        </defs>
+
+        <!-- trust boundary -->
+        <rect class="tb" x="250" y="20" width="620" height="340" rx="12"/>
+        <text class="tblabel" x="262" y="42">TB1 — public internet ↔ backend</text>
+
+        <!-- external entity -->
+        <rect class="ee" x="30" y="150" width="150" height="60" rx="4"/>
+        <text x="105" y="175" text-anchor="middle">EE1 Client</text>
+        <text x="105" y="194" text-anchor="middle" class="fid">authenticated user</text>
+
+        <!-- process -->
+        <ellipse class="proc" cx="400" cy="180" rx="90" ry="46"/>
+        <text x="400" y="176" text-anchor="middle">P1 API handler</text>
+        <text x="400" y="194" text-anchor="middle" class="fid">authn + authz</text>
+
+        <!-- data store -->
+        <g class="store">
+          <line x1="680" y1="150" x2="850" y2="150"/>
+          <line x1="680" y1="212" x2="850" y2="212"/>
+        </g>
+        <text x="765" y="176" text-anchor="middle">DS1 Primary DB</text>
+        <text x="765" y="194" text-anchor="middle" class="fid">encrypted at rest</text>
+
+        <!-- flows -->
+        <path class="flow" d="M182,180 L306,180"/>
+        <text class="fid" x="244" y="172" text-anchor="middle">F1 request</text>
+        <path class="flow" d="M492,180 L676,180"/>
+        <text class="fid" x="584" y="172" text-anchor="middle">F2 query</text>
+      </svg>
+    </div>
+    <figcaption>Figure 1 — system overview. Detailed per-flow diagrams follow in section 3.</figcaption>
+    <ul class="legend">
+      <li><svg class="dfd" viewBox="0 0 34 20"><rect class="ee" x="1" y="3" width="32" height="14" rx="2"/></svg> External entity</li>
+      <li><svg class="dfd" viewBox="0 0 34 20"><ellipse class="proc" cx="17" cy="10" rx="15" ry="8"/></svg> Process</li>
+      <li><svg class="dfd" viewBox="0 0 34 20"><g class="store"><line x1="2" y1="5" x2="32" y2="5"/><line x1="2" y1="15" x2="32" y2="15"/></g></svg> Data store</li>
+      <li><svg class="dfd" viewBox="0 0 34 20"><defs><marker id="lgarrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--ink)"/></marker></defs><path class="flow" d="M2,10 L30,10" marker-end="url(#lgarrow)"/></svg> Data flow</li>
+      <li><svg class="dfd" viewBox="0 0 34 20"><rect class="tb" x="1" y="3" width="32" height="14" rx="3"/></svg> Trust boundary</li>
+    </ul>
+  </figure>
+
+  <h3>2.3 Elements and the attributes that drive threats</h3>
+  <p class="note">Filled in before any STRIDE work. Several rows generate a threat
+     mechanically — an unencrypted flow on a public network owes Tampering and
+     Information disclosure whether or not anyone imagined a scenario.</p>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>ID</th><th>Element</th><th>Type</th><th>Trust zone</th><th>Security-relevant attributes</th></tr></thead>
+    <tbody>
+      <!-- REPEAT per element -->
+      <tr><td><code>{{P1}}</code></td><td>{{name}}</td><td>{{Process}}</td><td>{{TB1 inside}}</td>
+          <td>{{runs as X; makes the authz decision; reads DS1}}</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>2.4 Trust boundaries</h3>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>ID</th><th>Between</th><th>What changes across it</th><th>Flows crossing</th></tr></thead>
+    <tbody>
+      <!-- REPEAT -->
+      <tr><td><code>{{TB1}}</code></td><td>{{a}} ↔ {{b}}</td><td>{{trust change}}</td><td><code>{{F1, F4}}</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>2.5 Design decisions on record</h3>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Decision</th><th>Alternative rejected</th><th>Because</th><th>Revisit when</th></tr></thead>
+    <tbody>
+      <!-- REPEAT -->
+      <tr><td>{{chose X}}</td><td>{{Y}}</td><td>{{Z}}</td><td>{{Z stops being true}}</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ================================================ 3. FLOWS + STRIDE LIST -->
+<section id="flows">
+  <h2>3. Data flows and STRIDE analysis</h2>
+  <p class="lede">One subsection per data flow: its diagram, then everything STRIDE
+     produced for that flow alone. A flow is finished before the next one starts.</p>
+
+  <ul class="flowjump">
+    <!-- REPEAT one chip per flow -->
+    <li><a href="#flow-{{slug}}">{{DF1 — authenticated upload}}</a></li>
+  </ul>
+
+  <div class="filterbar" id="filterbar" role="group" aria-label="Filter threats">
+    <label class="visually-hidden" for="q">Search threats</label>
+    <input id="q" type="search" placeholder="Search threats, elements, mitigations…">
+    <button type="button" data-f="sev" data-v="Critical" aria-pressed="false">Critical</button>
+    <button type="button" data-f="sev" data-v="High" aria-pressed="false">High</button>
+    <button type="button" data-f="status" data-v="Open" aria-pressed="false">Open</button>
+    <button type="button" data-f="evidence" data-v="Confirmed" aria-pressed="false">Confirmed</button>
+    <span class="note" id="filtercount"></span>
+  </div>
+
+  <!-- ============ REPEAT this whole <article> once per data flow ============ -->
+  <article class="flowsec" id="flow-{{slug}}">
+    <h3>3.1 {{DF1}} — {{flow name}}</h3>
+    <p class="lede">{{One line: entry point → consequential operation. Who can reach
+       it, and what it is allowed to do.}}</p>
+
+    <h4>Diagram</h4>
+    <figure>
+      <div class="svgbox">
+        <svg class="dfd" viewBox="0 0 900 420" role="img"
+             aria-label="{{Describe this flow's diagram in words for a screen reader}}">
+          <!-- Reuse the shapes from Figure 1. Every process that makes a security
+               decision gets its own circle — one opaque backend box produces
+               threats nobody can act on. -->
+        </svg>
+      </div>
+      <figcaption>Figure {{n}} — {{DF1}} {{flow name}}.</figcaption>
+    </figure>
+
+    <h4>Steps</h4>
+    <ol class="steps">
+      <!-- REPEAT: the ordered walk through the flow, naming element IDs. -->
+      <li><code>{{F1}}</code> {{caller}} → <code>{{P1}}</code>: {{what is carried, over what, authenticated how}}</li>
+    </ol>
+
+    <h4>What STRIDE produced for this flow</h4>
+    <div class="tablewrap">
+    <table>
+      <thead><tr><th>Element</th><th>Category</th><th>Threat</th><th>Severity</th><th>Evidence</th><th>Status</th></tr></thead>
+      <tbody>
+        <!-- REPEAT one row per threat on this flow; the ID links to its card -->
+        <tr>
+          <td><code>{{P1}}</code></td>
+          <td>{{E — elevation of privilege}}</td>
+          <td><a href="#{{T-upload-004}}">{{T-upload-004}} {{short title}}</a></td>
+          <td><span class="badge sev-high">High</span></td>
+          <td><span class="ev ev-likely">Likely</span></td>
+          <td><span class="st st-open">Open</span></td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+
+    <h4>Threat records</h4>
+    <!-- ===== REPEAT one <details> per threat on this flow ===== -->
+    <details class="threat" id="{{T-upload-004}}"
+             data-sev="{{High}}" data-status="{{Open}}" data-evidence="{{Likely}}">
+      <summary>
+        <span class="tid">{{T-upload-004}}</span>
+        <span class="ttitle">{{Per-credential rate limit multiplies with credential count}}</span>
+        <span class="badge sev-high">High</span>
+        <span class="ev ev-likely">Likely</span>
+        <span class="st st-open">Open</span>
+      </summary>
+      <div class="body">
+        <dl>
+          <dt>Elements</dt>
+          <dd class="elref">{{P2 rate limiter · DS1 limit counters · F3 client → API}}</dd>
+
+          <dt>Category</dt>
+          <dd>{{D — denial of service}}</dd>
+
+          <dt>Prerequisites</dt>
+          <dd>{{What the attacker needs before starting: position, credentials, privilege.}}</dd>
+
+          <dt>Attack steps</dt>
+          <dd><ol>
+            <li>{{step}}</li>
+          </ol></dd>
+
+          <dt>Asset</dt>
+          <dd>{{what is actually harmed}}</dd>
+
+          <dt>Impact</dt>
+          <dd>{{consequence in terms someone outside the team can weigh}}</dd>
+
+          <dt>Severity</dt>
+          <dd><span class="badge sev-high">High</span> — {{rationale: blast radius and cost, not fix difficulty}}</dd>
+
+          <dt>Evidence</dt>
+          <dd><span class="ev ev-likely">Likely</span> — {{source, e.g. <code>limiter.py:41</code>}}. {{Not reproduced.}}</dd>
+
+          <dt>Controls today</dt>
+          <dd>{{what exists, with a config or source reference}}</dd>
+
+          <dt>Mitigation</dt>
+          <dd>{{The specific change, and the reason where a reasonable engineer
+              might "improve" it into something worse.}}</dd>
+
+          <dt>Status</dt>
+          <dd><span class="st st-open">Open</span> — {{reason and next action}}</dd>
+
+          <dt>Owner</dt>
+          <dd>{{team | unknown}}</dd>
+
+          <dt>Verify</dt>
+          <dd><code>{{test_name()}}</code> — {{what result proves it closed}}</dd>
+        </dl>
+      </div>
+    </details>
+
+    <h4>Considered and not supported</h4>
+    <p class="note">{{Categories asked on this flow's elements that produced no
+       threat, and why. This is a result, not a gap — and it is what separates a
+       cleared element from a skipped one.}}</p>
+  </article>
+  <!-- ====================== end repeated flow article ====================== -->
+</section>
+
+<!-- ================================================= 4. CROSS-FLOW / SERVICE -->
+<section id="cross">
+  <h2>4. Cross-flow attack paths</h2>
+  <p class="lede">Paths that no single flow's analysis would have found, because
+     they use one flow's output as another flow's input.</p>
+  <!-- REPEAT -->
+  <div class="card">
+    <h3 style="margin-top:0">{{AP1 — title}}</h3>
+    <ol>
+      <li>{{step, naming the flow and element IDs it traverses}}</li>
+    </ol>
+    <p><b>Threats involved:</b> <a href="#{{T-a-001}}">{{T-a-001}}</a>, <a href="#{{T-b-003}}">{{T-b-003}}</a><br>
+       <b>Net severity:</b> <span class="badge sev-critical">Critical</span> — {{why the chain outranks its parts}}</p>
+  </div>
+</section>
+
+<!-- ====================================================== 5. BACKLOG -->
+<section id="backlog">
+  <h2>5. Remediation backlog</h2>
+  <p class="lede">Ordered by severity against change risk. Shared root causes are
+     deduplicated into one item; every affected threat ID is preserved.</p>
+
+  <h3>5.1 Quick wins</h3>
+  <p class="note">Config changes and single-line fixes that close real findings today.
+     Listed separately so they are not buried behind architectural work.</p>
+  <ul>
+    <!-- REPEAT --><li>{{fix}} — closes <a href="#{{T-x-001}}">{{T-x-001}}</a></li>
+  </ul>
+
+  <h3>5.2 Ordered work</h3>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>#</th><th>Fix</th><th>Closes</th><th>Severity</th><th>Breaks</th><th>Ship</th><th>Owner</th></tr></thead>
+    <tbody>
+      <!-- REPEAT -->
+      <tr>
+        <td>{{1}}</td><td>{{the specific change}}</td>
+        <td><a href="#{{T-x-001}}">{{T-x-001}}</a></td>
+        <td><span class="badge sev-high">High</span></td>
+        <td>{{nothing | callers omitting the field}}</td>
+        <td>{{now | soon | plan}}</td><td>{{team | unknown}}</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>5.3 Accepted risks</h3>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Threat</th><th>Accepted because</th><th>Decision recorded by</th></tr></thead>
+    <tbody>
+      <!-- REPEAT -->
+      <tr><td><a href="#{{T-x-009}}">{{T-x-009}}</a></td><td>{{reason}}</td><td>{{person/role, or "proposed — no owner decision yet"}}</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ================================================= 6. COVERAGE MATRIX -->
+<section id="coverage">
+  <h2>6. Coverage matrix</h2>
+  <p class="lede">One row per element, one column per category that applies to its
+     type, no empty cells. A threat ID means analysed and found;
+     <span class="cleared">—</span> means considered and nothing supported;
+     <span class="na">n/a</span> means the category does not apply to that element type;
+     <span class="skipped">skipped</span> means not analysed and needs a reason below.</p>
+  <div class="tablewrap">
+  <table class="matrix">
+    <thead><tr><th>Element</th><th>S</th><th>T</th><th>R</th><th>I</th><th>D</th><th>E</th></tr></thead>
+    <tbody>
+      <!-- REPEAT per element -->
+      <tr>
+        <td><code>{{EE1}}</code> {{user}}</td>
+        <td><a href="#{{T-x-001}}">{{T-x-001}}</a></td>
+        <td class="na">n/a</td><td class="cleared">—</td><td class="na">n/a</td>
+        <td class="na">n/a</td><td class="na">n/a</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+  <h4>Skipped cells</h4>
+  <ul>
+    <!-- REPEAT --><li><code>{{element}} / {{category}}</code> — {{reason}}. Revisit when {{condition}}.</li>
+  </ul>
+</section>
+
+<!-- ============================================= 7. QUESTIONS / RESIDUAL -->
+<section id="questions">
+  <h2>7. Open questions and residual risk</h2>
+
+  <h3>7.1 Questions, grouped by who to ask</h3>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Ask</th><th>Question</th><th>Blocks</th></tr></thead>
+    <tbody>
+      <!-- REPEAT -->
+      <tr><td>{{platform team}}</td><td>{{question}}</td><td><a href="#{{T-x-002}}">{{T-x-002}}</a></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>7.2 Blocked work</h3>
+  <ul>
+    <!-- REPEAT --><li>{{what could not be reviewed}} — {{missing evidence}}. {{What would unblock it.}}</li>
+  </ul>
+
+  <h3>7.3 Residual risk after the backlog ships</h3>
+  <p>{{What remains exposed even with every planned fix in place.}}</p>
+
+  <h3>7.4 Revisit this model when</h3>
+  <ul>
+    <li>{{architecture changes / a new trust boundary appears / a new interaction pattern is supported}}</li>
+  </ul>
+</section>
+
+</div><!-- /wrap -->
+
+<script>
+/* Progressive filter. Without JS the bar stays hidden and every threat is readable. */
+(function(){
+  var bar=document.getElementById('filterbar');
+  if(!bar) return;
+  bar.classList.add('on');
+  var q=document.getElementById('q'),
+      count=document.getElementById('filtercount'),
+      btns=[].slice.call(bar.querySelectorAll('button[data-f]')),
+      cards=[].slice.call(document.querySelectorAll('.threat'));
+  function apply(){
+    var term=(q.value||'').toLowerCase(),
+        active=btns.filter(function(b){return b.getAttribute('aria-pressed')==='true'}),
+        shown=0;
+    cards.forEach(function(c){
+      var okFacet=active.every(function(b){
+        return (c.dataset[b.dataset.f]||'')===b.dataset.v;
+      });
+      var okText=!term||c.textContent.toLowerCase().indexOf(term)>-1;
+      var show=okFacet&&okText;
+      c.hidden=!show;
+      if(show) shown++;
+    });
+    count.textContent=shown+' of '+cards.length+' threats shown';
+    /* keep a flow's own heading visible even when all its threats are filtered out */
+  }
+  q.addEventListener('input',apply);
+  btns.forEach(function(b){
+    b.addEventListener('click',function(){
+      b.setAttribute('aria-pressed',b.getAttribute('aria-pressed')==='true'?'false':'true');
+      apply();
+    });
+  });
+  /* a link to a collapsed threat should open it */
+  function openTarget(){
+    var el=location.hash&&document.querySelector(location.hash);
+    if(el&&el.tagName==='DETAILS'){el.hidden=false;el.open=true;}
+  }
+  window.addEventListener('hashchange',openTarget);
+  openTarget();
+  apply();
+})();
+</script>
+</body>
+</html>
