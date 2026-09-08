@@ -89,22 +89,6 @@ Invoke with `Use secure-system-design to review my system architecture.`
 npx --yes skills add Thanarak-q/secure-system-design --global --yes --agent codex claude-code hermes-agent gemini-cli
 ```
 
-### Flags
-
-| Flag | Does |
-| --- | --- |
-| `--global` | Installs for your user across projects |
-| `--yes` | Skips the npm and installer confirmation prompts |
-| `--list` | Inspects the repository's skills without installing anything |
-
-Syntax and agent names follow the [Skills CLI documentation](https://github.com/vercel-labs/skills).
-
-### If the skill does not appear
-
-- Restart your agent. Gemini CLI also supports `/skills reload`.
-- These instructions target the coding tools, not consumer chat websites.
-- Installer support does not imply that the skill's behavior has been tested in every host.
-
 ## Example prompts
 
 **Review all services in depth**
