@@ -75,13 +75,6 @@ npx --yes skills add Thanarak-q/secure-system-design --global --yes --agent herm
 
 Invoke with `Use secure-system-design to review my system architecture.`
 
-**Gemini CLI**
-
-```sh
-npx --yes skills add Thanarak-q/secure-system-design --global --yes --agent gemini-cli
-```
-
-Invoke with `Use secure-system-design to review my system architecture.`
 
 **Several agents at once** — list them after `--agent`
 
@@ -129,46 +122,7 @@ Use secure-system-design to turn this threat model and its mitigations
 into implementation specifications and a test plan.
 ```
 
-## Files and customization
-
-```text
-secure-system-design/
-├── README.md
-├── SKILL.md
-├── agents/
-│   └── openai.yaml
-├── assets/
-│   ├── report-template.html
-│   └── workflow.svg
-└── references/
-    ├── hld.md
-    ├── threat-modeling.md
-    ├── existing-system.md
-    ├── deep-dive.md
-    ├── test-plan.md
-    └── service-review.md
-```
-
-| File | Edit to change |
-| --- | --- |
-| [SKILL.md](SKILL.md) | Main workflow, activation description, and output guidance |
-| [hld.md](references/hld.md) | Architecture and design decisions |
-| [threat-modeling.md](references/threat-modeling.md) | DFDs, threats, and mitigation decisions |
-| [existing-system.md](references/existing-system.md) | Existing-system reviews and remediation planning |
-| [deep-dive.md](references/deep-dive.md) | Implementation specifications |
-| [test-plan.md](references/test-plan.md) | Translating threats into verification work |
-| [service-review.md](references/service-review.md) | Deep service reviews, coverage, cross-service analysis, and HTML reports |
-| [report-template.html](assets/report-template.html) | Look and structure of the HTML report — styling, DFD shapes, severity badges, section order |
-| [workflow.svg](assets/workflow.svg) | The workflow diagram in this README |
-
-Edit the Markdown files directly. Preserve the `name` and `description` metadata in `SKILL.md` and keep relative links valid. Re-run your installation command after editing to update the installed copy.
-
 ## Publishing on GitHub
 
 Push this folder with `SKILL.md`, `references/`, and `assets/` at the repository root. Add a `LICENSE` file with your chosen terms for reuse. The skill itself needs no build step or package dependencies.
 
-## Host documentation
-
-- [Codex skills](https://learn.chatgpt.com/docs/build-skills)
-- [Claude Code skills](https://code.claude.com/docs/en/skills)
-- [Gemini CLI skills](https://geminicli.com/docs/cli/skills/)
