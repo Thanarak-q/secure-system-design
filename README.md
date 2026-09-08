@@ -49,47 +49,40 @@ This repository contains instructions for the agent to generate these artifacts 
 
 ## Installation
 
-With Node.js and npm installed, run:
-
-```sh
-npx --yes skills add Thanarak-q/secure-system-design --global --yes --agent codex claude-code hermes-agent gemini-cli
-```
-
-This installs the skill for Codex, Claude Code, Hermes Agent, and Gemini CLI. Remove agent names you do not use. `--global` installs for your user across projects; the `--yes` flags skip npm and installer confirmation prompts. The syntax and agent names follow the [Skills CLI documentation](https://github.com/vercel-labs/skills).
-
-To install for just one agent, for example Codex:
+Requires Node.js and npm. Install for one agent:
 
 ```sh
 npx --yes skills add Thanarak-q/secure-system-design --global --yes --agent codex
 ```
 
-To inspect the repository's skills without installing:
+Or for several at once, by listing them:
 
 ```sh
-npx --yes skills add Thanarak-q/secure-system-design --list
+npx --yes skills add Thanarak-q/secure-system-design --global --yes --agent codex claude-code hermes-agent gemini-cli
 ```
 
-### Usage
+| Agent | `--agent` value | Invoke it with |
+| --- | --- | --- |
+| Codex | `codex` | `$secure-system-design review my system architecture` |
+| Claude Code | `claude-code` | `/secure-system-design review my system architecture` |
+| Hermes Agent | `hermes-agent` | `Use secure-system-design to review my system architecture.` |
+| Gemini CLI | `gemini-cli` | `Use secure-system-design to review my system architecture.` |
 
-In Codex:
+### Flags
 
-```text
-$secure-system-design review my system architecture
-```
+| Flag | Does |
+| --- | --- |
+| `--global` | Installs for your user across projects |
+| `--yes` | Skips the npm and installer confirmation prompts |
+| `--list` | Inspects the repository's skills without installing anything |
 
-In Claude Code:
+Syntax and agent names follow the [Skills CLI documentation](https://github.com/vercel-labs/skills).
 
-```text
-/secure-system-design review my system architecture
-```
+### If the skill does not appear
 
-In Hermes Agent or Gemini CLI:
-
-```text
-Use secure-system-design to review my system architecture.
-```
-
-Restart your agent if the skill does not appear; Gemini CLI also supports `/skills reload`. These instructions target the coding tools, not consumer chat websites. Installer support does not imply that the skill's behavior has been tested in every host.
+- Restart your agent. Gemini CLI also supports `/skills reload`.
+- These instructions target the coding tools, not consumer chat websites.
+- Installer support does not imply that the skill's behavior has been tested in every host.
 
 ## Example prompts
 
